@@ -69,7 +69,7 @@ while True:
 		c = max(cnts, key=cv2.contourArea)
 		((x, y), rad) = cv2.minEnclosingCircle(c)
 		radius = rad
-		print("At ({},{}), radius: {}".format(x,y,radius))
+		# print("At ({},{}), radius: {}".format(x,y,radius))
 		M = cv2.moments(c)
 		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
@@ -81,16 +81,24 @@ while True:
 				(0, 255, 255), 2)
 			cv2.circle(frame, center, 5, (0, 0, 255), -1)
 
-	# update the radiuses queue
-	rds.appendleft(radius)
-
-	if radius == min(rds):
-		print("Wall hit!!!")
+	# Update the radiuses queue only if unique
+	if len(rds) == 0 or radius != rds[0]:
+	# if center != pts[0]:
+		rds.appendleft(radius)
+		pts.appendleft(center)
 
 	# update the points queue
-	pts.appendleft(center)
+	# pts.appendleft(center)
 
-    	# loop over the set of tracked points
+	# if last < second last and this last > second last
+	# print(rds)
+	if (rds and len(rds) > 3 and (rds[-1] < rds[-2] and rds[-3] > rds[-2])):
+		print("Wall hit!!!")
+	else:
+		print("Not feeling it!")
+
+
+	# loop over the set of tracked points
 	for i in range(1, len(pts)):
 		# if either of the tracked points are None, ignore
 		# them
