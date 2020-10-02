@@ -84,7 +84,7 @@ while True:
 	# update the radiuses queue
 	rds.appendLeft(radius)
 
-	if radius === min(rds):
+	if radius == min(rds):
 		print("Wall hit!!!")
 
 	# update the points queue
