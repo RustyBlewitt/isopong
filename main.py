@@ -82,7 +82,7 @@ while True:
 			cv2.circle(frame, center, 5, (0, 0, 255), -1)
 
 	# update the radiuses queue
-	rds.appendLeft(radius)
+	rds.appendleft(radius)
 
 	if radius == min(rds):
 		print("Wall hit!!!")
