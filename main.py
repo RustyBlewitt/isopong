@@ -92,7 +92,7 @@ while True:
 
 	# if last < second last and this last > second last
 	# print(rds)
-	if (rds and len(rds) > 3 and (rds[-1] < rds[-2] and rds[-3] > rds[-2])):
+	if (rds != None and len(rds) > 3 and (rds[-1] < rds[-2] and rds[-3] > rds[-2])):
 		print("Wall hit!!!")
 	else:
 		print("Not feeling it!")
