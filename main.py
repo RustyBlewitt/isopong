@@ -6,6 +6,7 @@ import argparse
 import cv2
 import imutils
 import time
+
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-v", "--video",
@@ -14,9 +15,7 @@ ap.add_argument("-b", "--buffer", type=int, default=64,
     help="max buffer size")
 args = vars(ap.parse_args())
 
-# define the lower and upper boundaries of the "green"
-# ball in the HSV color space, then initialize the
-# list of tracked points
+# HSV color space, bound what we consider "orange"
 orangeLower = (0, 80, 50)
 orangeUpper = (23, 255, 255)
 pts = deque(maxlen=args["buffer"])
@@ -65,6 +64,7 @@ while True:
 		# centroid
 		c = max(cnts, key=cv2.contourArea)
 		((x, y), radius) = cv2.minEnclosingCircle(c)
+		print(radius)
 		M = cv2.moments(c)
 		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 		# only proceed if the radius meets a minimum size
