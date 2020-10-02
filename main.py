@@ -14,10 +14,10 @@ ap.add_argument("-v", "--video",
 ap.add_argument("-b", "--buffer", type=int, default=64,
     help="max buffer size")
 args = vars(ap.parse_args())
+orangeLower = (0, 88, 91)
 
 # HSV color space, bound what we consider "orange"
-orangeLower = (0, 80, 50)
-orangeUpper = (23, 255, 255)
+orangeUpper = (56, 255, 255)
 pts = deque(maxlen=args["buffer"])
 # if a video path was not supplied, grab the reference
 # to the webcam
