@@ -74,28 +74,35 @@ while True:
 		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
 
 		# only proceed if the radius meets a minimum size
-		if radius > 10:
+		# if radius > 10:
 			# draw the circle and centroid on the frame,
 			# then update the list of tracked points
-			cv2.circle(frame, (int(x), int(y)), int(radius),
-				(0, 255, 255), 2)
-			cv2.circle(frame, center, 5, (0, 0, 255), -1)
 
-	# Update the radiuses queue only if unique
-	if len(rds) == 0 or radius != rds[0]:
-	# if center != pts[0]:
-		rds.appendleft(radius)
-		pts.appendleft(center)
+		# Draw circles. Center and radius
+		cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 255), 2)
+		cv2.circle(frame, center, 5, (0, 0, 255), -1)
 
-	# update the points queue
-	# pts.appendleft(center)
+		# Update the radiuses queue only if unique
+		if len(rds) == 0 or radius != rds[0]:
+		# if center != pts[0]:
+			rds.appendleft(radius)
+			pts.appendleft(center)
 
-	# if last < second last and this last > second last
-	# print(rds)
-	if (rds != None and len(rds) > 3 and (rds[-1] < rds[-2] and rds[-3] > rds[-2])):
-		print("Wall hit!!!")
-	else:
-		print("Not feeling it!")
+		# update the points queue
+		# pts.appendleft(center)
+
+		# if last < second last and this last > second last
+		# print(rds)
+
+		if (rds != None and len(rds) > 3 and (rds[-1] < rds[-2] and rds[-3] > rds[-2])):
+			print("Wall hit!!!")
+		else:
+			print("Not feeling it!")
+
+	# if (rds != None and len(rds) > 3 and (rds[-1] < rds[-2] and rds[-3] > rds[-2])):
+	# 	print("Wall hit!!!")
+	# else:
+	# 	print("Not feeling it!")
 
 
 	# loop over the set of tracked points
