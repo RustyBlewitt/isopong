@@ -7,6 +7,7 @@ import cv2
 import imutils
 import time
 import pygame
+# import os
 
 cool_off_override = True
 
@@ -17,6 +18,9 @@ pygame.mixer.init()
 perfect_sound = pygame.mixer.Sound('sounds/perfect.wav')
 nice_sound = pygame.mixer.Sound('sounds/nice.wav')
 useless_sound = pygame.mixer.Sound('sounds/useless.wav')
+
+score = 0
+frame_count = 0
 
 # Measure euclid dist
 def get_dist(bullseye, captured):
@@ -31,6 +35,22 @@ def audio_feedback(score):
 	else:
 		useless_sound.play()
 
+# The lower the score the better
+def get_text_score(score):
+	if score < 50:
+		return "Perfect!"
+	elif score < 150:
+		return "Nice"
+	else:
+		return "Useless"
+
+def get_text_clr(score):
+	if score < 50:
+		return (0, 255, 0)
+	elif score < 150:
+		return (255, 255, 255)
+	else:
+		return (0, 0, 255)
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -38,7 +58,14 @@ ap.add_argument("-v", "--video",
     help="path to the (optional) video file")
 ap.add_argument("-b", "--buffer", type=int, default=64,
     help="max buffer size")
+ap.add_argument("-r", "--record", type=int, default=False,
+    help="record or not")
 args = vars(ap.parse_args())
+
+
+# if(args.get# Save the captured images
+# dirname = int(time.time())
+# os.mkdir(dirname)
 
 orangeLower = (0, 88, 91)
 
@@ -125,6 +152,7 @@ while True:
 		# Draw circles. Center, radius and bullseye
 		cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 255), 2)
 		cv2.circle(frame, center, 5, (0, 0, 255), -1)
+		cv2.circle(frame, center, 10, (0, 0, 255), -1)
 
 		# Update the radii queue only if unique
 		if len(rds) == 0 or radius != rds[0]:
@@ -154,42 +182,13 @@ while True:
 					was_returning = True
 					diminishing = max_diminish
 
-
-			# if returning:
-			# else if rds[0] < rds[-1]:
-			# 	print(uniques, ": >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-			# else:
-			# 	print(uniques, ": <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
-
 	# Else nothing detected
 	else:
-
 		diminishing = max_diminish
 		was_returning = False
 		# Revert deques
 		pts = deque(maxlen=args["buffer"])
 		rds = deque(maxlen=args["buffer"])
-		# update the points queue
-		# pts.appendleft(center)
-
-		# if last < second last and this last > second last
-		# print(rds)
-
-		# if (rds != None and len(rds) > 3 and (rds[-1] < rds[-2] and rds[-3] > rds[-2])):
-		# 	print("Wall hit!!!")
-		# else:
-		# 	print("Not feeling it!")
-
-		# if len(rds) < 3:
-		# 	print("Radius recents: ", rds)
-		# else:
-			# print("Radius recents: {} {} {}".format(rds[-3], rds[-2], rds[-1]))
-
-	# if (rds != None and len(rds) > 3 and (rds[-1] < rds[-2] and rds[-3] > rds[-2])):
-	# 	print("Wall hit!!!")
-	# else:
-	# 	print("Not feeling it!")
-
 
 	# loop over the set of tracked points
 	for i in range(1, len(pts)):
@@ -200,9 +199,19 @@ while True:
 		# otherwise, compute the thickness of the line and
 		# draw the connecting lines
 		thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
-		cv2.line(frame, pts[i - 1], pts[i], (0, 0, 255), thickness)
+		cv2.line(frame, pts[i - 1], pts[i], (255, 255, 0), thickness)
+
+		text = get_text_score(score)
+		font = cv2.FONT_HERSHEY_SIMPLEX
+		color = get_text_clr(score)
+		text_pos = (200, 250)
+
+		# Put text score on frame (size 2, thickness 5)
+		cv2.putText(frame, text, text_pos, font, 2, color, 5)
+
 	# show the frame to our screen
 	cv2.imshow("Frame", frame)
+	cv
 	key = cv2.waitKey(1) & 0xFF
 	# if the 'q' key is pressed, stop the loop
 	if key == ord("q"):
