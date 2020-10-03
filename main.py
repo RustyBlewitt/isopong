@@ -124,7 +124,7 @@ while True:
 	else:
 
 		diminishing = max_diminish
-		was_returning = false
+		was_returning = False
 		# Revert deques
 		pts = deque(maxlen=args["buffer"])
 		rds = deque(maxlen=args["buffer"])
