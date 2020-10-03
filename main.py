@@ -6,6 +6,29 @@ import argparse
 import cv2
 import imutils
 import time
+import pygame
+
+# Initialize the pygame mixer for sounds
+pygame.mixer.init()
+
+# Load sound files
+perfect_sound = pygame.mixer.Sound('perfect.wav')
+nice_sound = pygame.mixer.Sound('nice.wav')
+useless_sound = pygame.mixer.Sound('useless.wav')
+
+# Measure euclid dist
+def get_dist(bullseye, captured):
+	return ( (bullseye[0] - captured[0])**2 + (bullseye[1] - captured[1])**2 )**0.5
+
+# The lower the score the better
+def audio_feedback(score):
+	if score < 15:
+		perfect_sound.play()
+	else if score < 100:
+		nice_sound.play()
+	else:
+		useless_sound.play()
+
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -14,12 +37,17 @@ ap.add_argument("-v", "--video",
 ap.add_argument("-b", "--buffer", type=int, default=64,
     help="max buffer size")
 args = vars(ap.parse_args())
+
 orangeLower = (0, 88, 91)
+
+# Hardcoded bullseye val
+bullseye = (308, 165)
 
 # HSV color space, bound what we consider "orange"
 orangeUpper = (56, 255, 255)
 pts = deque(maxlen=args["buffer"])
 rds = deque(maxlen=args["buffer"])
+
 # if a video path was not supplied, grab the reference
 # to the webcam
 if not args.get("video", False):
@@ -96,8 +124,8 @@ while True:
 		# Update the radii queue only if unique
 		if len(rds) == 0 or radius != rds[0]:
 
-			if (len(rds) > 2):
-				print("Prev pos: ", pts[1])
+			# if (len(rds) > 2):
+			# 	print("Prev pos: ", pts[1])
 
 			uniques += 1
 			diminishing -= 1
@@ -111,12 +139,16 @@ while True:
 				direction_change = was_returning != now_returning
 				# print("Check diminishing ", diminishing)
 
+				# Wall hit
 				if direction_change and diminishing < 0:
 					# Take previous point as the wall hit loc
+					score = get_dist(pts[1], bullseye)
+					audio_feedback(score)
 					print("Wall hit @ ", pts[1])
+					print("Score: ", get_dist(pts[1], bullseye))
 					was_returning = True
 					diminishing = max_diminish
-				
+
 
 			# if returning:
 			# else if rds[0] < rds[-1]:
