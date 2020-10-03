@@ -96,8 +96,9 @@ while True:
 		# Update the radii queue only if unique
 		if len(rds) == 0 or radius != rds[0]:
 
-			print("Prev pos: ", pts[1])
-			
+			if (len(rds) > 2):
+				print("Prev pos: ", pts[1])
+
 			uniques += 1
 			diminishing -= 1
 
