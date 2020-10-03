@@ -201,14 +201,22 @@ while True:
 		thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
 		cv2.line(frame, pts[i - 1], pts[i], (255, 255, 0), thickness)
 
-		text = get_text_score(score)
-		font = cv2.FONT_HERSHEY_SIMPLEX
-		color = get_text_clr(score)
-		text_pos = (200, 250)
+		# text = get_text_score(score)
+		# font = cv2.FONT_HERSHEY_SIMPLEX
+		# color = get_text_clr(score)
+		# text_pos = (200, 250)
 
-		# Put text score on frame (size 2, thickness 5)
-		cv2.putText(frame, text, text_pos, font, 2, color, 5)
+		# # Put text score on frame (size 2, thickness 5)
+		# cv2.putText(frame, text, text_pos, font, 2, color, 5)
 
+
+	text = get_text_score(score)
+	font = cv2.FONT_HERSHEY_SIMPLEX
+	color = get_text_clr(score)
+	text_pos = (200, 250)
+
+	# Put text score on frame (size 2, thickness 5)
+	cv2.putText(frame, text, text_pos, font, 2, color, 5)
 	# show the frame to our screen
 	cv2.imshow("Frame", frame)
 	key = cv2.waitKey(1) & 0xFF
