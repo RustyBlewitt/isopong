@@ -32,6 +32,16 @@ time.sleep(2.0)
 
 uniques = 0
 
+# Ball should initially be going away
+was_returning = False
+
+constant s = 23
+
+# Constant
+max_diminish = 10
+
+diminishing = max_diminish
+
 # keep looping
 while True:
 	# grab the current frame
@@ -86,15 +96,38 @@ while True:
 
 		# Update the radii queue only if unique
 		if len(rds) == 0 or radius != rds[0]:
-		# if center != pts[0]:
+
+			uniques += 1
+			diminishing -= 1
+
 			rds.appendleft(radius)
 			pts.appendleft(center)
-			uniques += 1
-			if rds[0] < rds[-1]:
+
+			# Cool off period for capturing of startup points
+			if len(rds) > 5:
+				now_returning = rds[0] > rds[1]
+				direction_change = was_returning != now_returning
+				
+				if direction_change and diminishing < 0:
+					print("Wall hit")
+					was_returning = True
+					diminishing = max_diminish
+				
+
+			if returning
+			else if rds[0] < rds[-1]:
 				print(uniques, ": >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 			else:
 				print(uniques, ": <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 
+	# Else nothing detected
+	else:
+
+		diminishing = max_diminish
+		was_returning = false
+		# Revert deques
+		pts = deque(maxlen=args["buffer"])
+		rds = deque(maxlen=args["buffer"])
 		# update the points queue
 		# pts.appendleft(center)
 
