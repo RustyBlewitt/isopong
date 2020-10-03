@@ -24,7 +24,7 @@ def get_dist(bullseye, captured):
 def audio_feedback(score):
 	if score < 15:
 		perfect_sound.play()
-	else if score < 100:
+	elif score < 100:
 		nice_sound.play()
 	else:
 		useless_sound.play()
