@@ -1,121 +1,108 @@
-# import the necessary packages
-from collections import deque
-from imutils.video import VideoStream
-import numpy as np
 import argparse
 import cv2
 import imutils
-import time
+import numpy as np
 import pygame
-# import os
-
-cool_off_override = True
-
-# Initialize the pygame mixer for sounds
-pygame.mixer.init()
-
-# Load sound files
-perfect_sound = pygame.mixer.Sound('sounds/perfect.wav')
-nice_sound = pygame.mixer.Sound('sounds/nice.wav')
-useless_sound = pygame.mixer.Sound('sounds/useless.wav')
-
-score = 0
-frame_count = 0
+import time
+from collections import deque
+from imutils.video import VideoStream
 
 # Measure euclid dist
 def get_dist(bullseye, captured):
 	return ( (bullseye[0] - captured[0])**2 + (bullseye[1] - captured[1])**2 )**0.5
 
-# The lower the score the better
-def audio_feedback(score):
-	if score < 50:
+# The lower the accuracy the better
+def audio_feedback(accuracy):
+	if accuracy < 50:
 		perfect_sound.play()
-	elif score < 150:
+	elif accuracy < 150:
 		nice_sound.play()
 	else:
 		useless_sound.play()
 
-# The lower the score the better
-def get_text_score(score):
-	if score < 50:
+# The lower the accuracy the better
+def get_text_accuracy(accuracy):
+	if accuracy < 50:
 		return "Perfect!"
-	elif score < 150:
+	elif accuracy < 150:
 		return "Nice"
 	else:
 		return "Useless"
 
-def get_text_clr(score):
-	if score < 50:
-		return (0, 255, 0)
-	elif score < 150:
-		return (255, 255, 255)
+# Determine text color based off accuracy
+def get_text_clr(accuracy):
+	if accuracy < 50:
+		return (0, 255, 0)		# Perfect -> Green
+	elif accuracy < 150:
+		return (255, 255, 255)	# Nice -> White
 	else:
-		return (0, 0, 255)
+		return (0, 0, 255)		# Useless -> Red
 
-# construct the argument parse and parse the arguments
-ap = argparse.ArgumentParser()
-ap.add_argument("-v", "--video",
-    help="path to the (optional) video file")
-ap.add_argument("-b", "--buffer", type=int, default=64,
-    help="max buffer size")
-ap.add_argument("-r", "--record", type=int, default=False,
-    help="record or not")
-args = vars(ap.parse_args())
+# Initially had a 5 frame period I would let pass per shot before considering
+#  if the ball has hit the wall, overridden due to shots in which the ball
+#  enters the frame high and hits the wall very soon after entering frame
+cool_off_override = True
 
+# Initialize the pygame mixer for sounds
+pygame.mixer.init()
 
-# if(args.get# Save the captured images
-# dirname = int(time.time())
-# os.mkdir(dirname)
+# Load sound files for audio feedback
+perfect_sound = pygame.mixer.Sound('sounds/perfect.wav')
+nice_sound = pygame.mixer.Sound('sounds/nice.wav')
+useless_sound = pygame.mixer.Sound('sounds/useless.wav')
 
+# How many unique points we could store per "shot" 
+#  (usually need less, but handy if ball left rolling around in view)
+cache_len = 50
+
+# The user's accuracy for the recent shot
+accuracy = 0
+
+# HSV color range, what I consider "table tennis ball orange" (can change through the day)
+#  Future improvements could entail ball color recognition on startup
 orangeLower = (0, 88, 91)
+orangeUpper = (56, 255, 255)
 
 # Hardcoded bullseye val
 bullseye = (300, 180)
 
-# HSV color space, bound what we consider "orange"
-orangeUpper = (56, 255, 255)
-pts = deque(maxlen=args["buffer"])
-rds = deque(maxlen=args["buffer"])
+# Max points recorded per shot (they will be wiped when ball exits screen)
+pts = deque(maxlen=50)
+rds = deque(maxlen=50)
 
-# if a video path was not supplied, grab the reference
-# to the webcam
-if not args.get("video", False):
-	vs = VideoStream(src=0).start()
-# otherwise, grab a reference to the video file
-else:
-	vs = cv2.VideoCapture(args["video"])
-# allow the camera or video file to warm up
-time.sleep(2.0)
+# Init video stream
+stream = VideoStream(src=0).start()
 
+# Count of unique measurements of (location, size)
 uniques = 0
 
 # Ball should initially be going away
 was_returning = False
 
-
 # Constant
 max_diminish = 10
 
+# Initialise as the max
 diminishing = max_diminish
 
-# keep looping
+# Short delay before begin to avoid camera init issues
+time.sleep(2.0)
+
+# Main program loop
 while True:
-	# grab the current frame
-	frame = vs.read()
-	# handle the frame from VideoCapture or VideoStream
-	frame = frame[1] if args.get("video", False) else frame
-	# if we are viewing a video and we did not grab a frame,
-	# then we have reached the end of the video
+	# Grab the current frame
+	frame = stream.read()
+
+	# Bail early if reading of frame failed
 	if frame is None:
-		break
-	# resize the frame, blur it, and convert it to the HSV
-	# color space
-	frame = imutils.resize(frame, width=600)
+		raise Exception('Could not read frame from video stream')
+
+	# Resize, blur and convert to HSV
+	frame = imutils.resize(frame, width = 600)
 	blurred = cv2.GaussianBlur(frame, (11, 11), 0)
 	hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
-	# construct a mask for the color "orange", then perform
-	# a series of dilations and erosions to remove any small
-	# blobs left in the mask
+
+	# Construct a mask for ball then erode and dilate to remove small blobs
 	mask = cv2.inRange(hsv, orangeLower, orangeUpper)
 	mask = cv2.erode(mask, None, iterations=2)
 	mask = cv2.dilate(mask, None, iterations=2)
@@ -123,31 +110,28 @@ while True:
 	# Draw bullseye
 	cv2.circle(frame, bullseye, 10, (100, 0, 100), 2)
 
-	# find contours in the mask and initialize the current
-	# (x, y) center of the ball
-	cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL,
-		cv2.CHAIN_APPROX_SIMPLE)
-	cnts = imutils.grab_contours(cnts)
+	# Find contours in the mask and initialize the current (x, y) center of the ball
+	# RETR_EXTERNAL - gives "outer" contours - when multiple contours, only return outer
+	# CHAIN_APPROX_SIMPLE - store only the endpoints of the lines that form the contours
+	contours = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+	contours = imutils.grab_contours(contours)
 
+	# Init shot metrics to None
 	center = None
 	radius = None
 
-	# only proceed if at least one contour was found
-	if len(cnts) > 0:
-		# find the largest contour in the mask, then use
-		# it to compute the minimum enclosing circle and
-		# centroid
-		c = max(cnts, key=cv2.contourArea)
-		((x, y), rad) = cv2.minEnclosingCircle(c)
-		radius = rad
-		# print("At ({},{}), radius: {}".format(x,y,radius))
-		M = cv2.moments(c)
-		center = (int(M["m10"] / M["m00"]), int(M["m01"] / M["m00"]))
+	# If at least one contour was found
+	if len(contours) > 0:
 
-		# only proceed if the radius meets a minimum size
-		# if radius > 10:
-			# draw the circle and centroid on the frame,
-			# then update the list of tracked points
+		# Retrieve largest contour found earlier
+		max_cont = max(contours, key=cv2.contourArea)
+
+		# Compute minimum enclosing circle of that contour (the ball)
+		((x, y), radius) = cv2.minEnclosingCircle(max_cont)
+
+		# Grab moments of the max contour to determine the center
+		moments = cv2.moments(max_cont)
+		center = (int(moments["m10"] / moments["m00"]), int(moments["m01"] / moments["m00"]))
 
 		# Draw circles. Center, radius and bullseye
 		cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 255), 2)
@@ -168,66 +152,63 @@ while True:
 
 			# Cool off period for capturing of startup points
 			if (cool_off_override and len(rds) > 2) or len(rds) > 5:
-				now_returning = rds[0] > rds[1]
-				direction_change = was_returning != now_returning
-				# print("Check diminishing ", diminishing)
 
-				# Wall hit
+				# Is the ball currently returning...
+				now_returning = rds[0] > rds[1]
+				
+				# ... and is that the same as the previous point
+				direction_change = was_returning != now_returning
+
+				# Wall hit if change detected and enough frames have been captured since last change
 				if direction_change and diminishing < 0:
-					# Take currnet point as the wall hit loc
-					score = get_dist(pts[1], bullseye)
-					audio_feedback(score)
+					# Take the current point as the wall hit loc
+					accuracy = get_dist(pts[1], bullseye)
+					audio_feedback(accuracy)
+					# Log the point and its accuracy score
 					print("Wall hit @ ", pts[1])
-					print("Score: ", get_dist(pts[1], bullseye))
+					print("accuracy: ", get_dist(pts[1], bullseye))
 					was_returning = True
 					diminishing = max_diminish
 
-	# Else nothing detected
+	# Else - no contours found
 	else:
+		# Reset diminishing and was_returning
 		diminishing = max_diminish
 		was_returning = False
 		# Revert deques
-		pts = deque(maxlen=args["buffer"])
-		rds = deque(maxlen=args["buffer"])
+		pts = deque(maxlen=50)
+		rds = deque(maxlen=50)
 
 	# loop over the set of tracked points
 	for i in range(1, len(pts)):
-		# if either of the tracked points are None, ignore
-		# them
+
+		# Ignore if either of the tracked points are None
 		if pts[i - 1] is None or pts[i] is None:
 			continue
-		# otherwise, compute the thickness of the line and
-		# draw the connecting lines
-		thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
+
+		# Compute thickness and draw connecting lines
+		thickness = int(np.sqrt(50 / float(i + 1)) * 2.5)
 		cv2.line(frame, pts[i - 1], pts[i], (255, 255, 0), thickness)
 
-		# text = get_text_score(score)
-		# font = cv2.FONT_HERSHEY_SIMPLEX
-		# color = get_text_clr(score)
-		# text_pos = (200, 250)
-
-		# # Put text score on frame (size 2, thickness 5)
-		# cv2.putText(frame, text, text_pos, font, 2, color, 5)
-
-
-	text = get_text_score(score)
+	# Generate text [perfect, nice, useless], use generic font, 
+	#  color text according to accuracy and put in central pos
+	text = get_text_accuracy(accuracy)
 	font = cv2.FONT_HERSHEY_SIMPLEX
-	color = get_text_clr(score)
+	color = get_text_clr(accuracy)
 	text_pos = (200, 250)
 
-	# Put text score on frame (size 2, thickness 5)
+	# Put text (described above) on frame with size 2 and thickness 5
 	cv2.putText(frame, text, text_pos, font, 2, color, 5)
 	# show the frame to our screen
 	cv2.imshow("Frame", frame)
-	key = cv2.waitKey(1) & 0xFF
-	# if the 'q' key is pressed, stop the loop
-	if key == ord("q"):
+
+	# Quit program via 'q' key
+	# 0xff is 11111111 in binary, bitwising '&' lets us capture the last byte of the waitKey
+	if ord("q") == cv2.waitKey(1) & 0xFF:
 		break
-# if we are not using a video file, stop the camera video stream
-if not args.get("video", False):
-	vs.stop()
-# otherwise, release the camera
-else:
-	vs.release()
+
+# Stop the video stream
+stream.stop()
+
 # close all windows
 cv2.destroyAllWindows()
