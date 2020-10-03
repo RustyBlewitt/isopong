@@ -60,6 +60,7 @@ while True:
 
 	center = None
 	radius = None
+	uniques = 0
 
 	# only proceed if at least one contour was found
 	if len(cnts) > 0:
@@ -87,11 +88,11 @@ while True:
 		# if center != pts[0]:
 			rds.appendleft(radius)
 			pts.appendleft(center)
-
+			uniques += 1
 			if rds[0] < rds[-1]:
-				print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+				print(uniques + ": >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 			else:
-				print("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+				print(uniques + ": <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 
 		# update the points queue
 		# pts.appendleft(center)
