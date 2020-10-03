@@ -99,6 +99,10 @@ while True:
 		else:
 			print("Not feeling it!")
 
+		if len(rds) < 3:
+			print("Radius recents: ", rds)
+		else:
+			print("Radius recents: {} {} {}".format(rds[-3], rds[-2], rds[-1]))
 	# if (rds != None and len(rds) > 3 and (rds[-1] < rds[-2] and rds[-3] > rds[-2])):
 	# 	print("Wall hit!!!")
 	# else:
