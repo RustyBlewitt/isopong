@@ -70,7 +70,7 @@ args = vars(ap.parse_args())
 orangeLower = (0, 88, 91)
 
 # Hardcoded bullseye val
-bullseye = (308, 165)
+bullseye = (300, 180)
 
 # HSV color space, bound what we consider "orange"
 orangeUpper = (56, 255, 255)
