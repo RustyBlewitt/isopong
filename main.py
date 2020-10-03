@@ -8,13 +8,15 @@ import imutils
 import time
 import pygame
 
+cool_off_override = True
+
 # Initialize the pygame mixer for sounds
 pygame.mixer.init()
 
 # Load sound files
-perfect_sound = pygame.mixer.Sound('perfect.wav')
-nice_sound = pygame.mixer.Sound('nice.wav')
-useless_sound = pygame.mixer.Sound('useless.wav')
+perfect_sound = pygame.mixer.Sound('sounds/perfect.wav')
+nice_sound = pygame.mixer.Sound('sounds/nice.wav')
+useless_sound = pygame.mixer.Sound('sounds/useless.wav')
 
 # Measure euclid dist
 def get_dist(bullseye, captured):
@@ -22,9 +24,9 @@ def get_dist(bullseye, captured):
 
 # The lower the score the better
 def audio_feedback(score):
-	if score < 15:
+	if score < 50:
 		perfect_sound.play()
-	elif score < 100:
+	elif score < 150:
 		nice_sound.play()
 	else:
 		useless_sound.play()
@@ -124,8 +126,8 @@ while True:
 		# Update the radii queue only if unique
 		if len(rds) == 0 or radius != rds[0]:
 
-			# if (len(rds) > 2):
-			# 	print("Prev pos: ", pts[1])
+			if (len(rds) > 2):
+				print("Prev pos: ", pts[1])
 
 			uniques += 1
 			diminishing -= 1
@@ -134,7 +136,7 @@ while True:
 			pts.appendleft(center)
 
 			# Cool off period for capturing of startup points
-			if len(rds) > 5:
+			if (cool_off_override and len(rds) > 2) or len(rds) > 5:
 				now_returning = rds[0] > rds[1]
 				direction_change = was_returning != now_returning
 				# print("Check diminishing ", diminishing)
