@@ -96,6 +96,8 @@ while True:
 		# Update the radii queue only if unique
 		if len(rds) == 0 or radius != rds[0]:
 
+			print("Prev pos: ", pts[1])
+			
 			uniques += 1
 			diminishing -= 1
 
@@ -109,7 +111,8 @@ while True:
 				# print("Check diminishing ", diminishing)
 
 				if direction_change and diminishing < 0:
-					print("Wall hit")
+					# Take previous point as the wall hit loc
+					print("Wall hit @ ", pts[1])
 					was_returning = True
 					diminishing = max_diminish
 				
