@@ -83,7 +83,7 @@ while True:
 		cv2.circle(frame, center, 5, (0, 0, 255), -1)
 
 		# Update the radiuses queue only if unique
-		if len(rds) == 0 or radius != rds[0]:
+		if len(rds) == 0 or (radius != rds[0] or center != pts[0]):
 		# if center != pts[0]:
 			rds.appendleft(radius)
 			pts.appendleft(center)
@@ -103,6 +103,7 @@ while True:
 			print("Radius recents: ", rds)
 		else:
 			print("Radius recents: {} {} {}".format(rds[-3], rds[-2], rds[-1]))
+
 	# if (rds != None and len(rds) > 3 and (rds[-1] < rds[-2] and rds[-3] > rds[-2])):
 	# 	print("Wall hit!!!")
 	# else:
