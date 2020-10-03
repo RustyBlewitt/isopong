@@ -30,6 +30,8 @@ else:
 # allow the camera or video file to warm up
 time.sleep(2.0)
 
+uniques = 0
+
 # keep looping
 while True:
 	# grab the current frame
@@ -60,7 +62,6 @@ while True:
 
 	center = None
 	radius = None
-	uniques = 0
 
 	# only proceed if at least one contour was found
 	if len(cnts) > 0:
