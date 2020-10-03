@@ -35,7 +35,6 @@ uniques = 0
 # Ball should initially be going away
 was_returning = False
 
-constant s = 23
 
 # Constant
 max_diminish = 10
