@@ -106,18 +106,19 @@ while True:
 			if len(rds) > 5:
 				now_returning = rds[0] > rds[1]
 				direction_change = was_returning != now_returning
-				
+				# print("Check diminishing ", diminishing)
+
 				if direction_change and diminishing < 0:
 					print("Wall hit")
 					was_returning = True
 					diminishing = max_diminish
 				
 
-			if returning
-			else if rds[0] < rds[-1]:
-				print(uniques, ": >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-			else:
-				print(uniques, ": <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
+			# if returning:
+			# else if rds[0] < rds[-1]:
+			# 	print(uniques, ": >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+			# else:
+			# 	print(uniques, ": <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<")
 
 	# Else nothing detected
 	else:
