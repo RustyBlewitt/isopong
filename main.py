@@ -129,9 +129,8 @@ while True:
 		# Compute minimum enclosing circle of that contour (the ball)
 		((x, y), radius) = cv2.minEnclosingCircle(max_cont)
 
-		# Grab moments of the max contour to determine the center
-		moments = cv2.moments(max_cont)
-		center = (int(moments["m10"] / moments["m00"]), int(moments["m01"] / moments["m00"]))
+		# Int the x, y floats that were returned from minEnc
+		center = (int(x), int(y))
 
 		# Draw circles. Center, radius and bullseye
 		cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 255), 2)
