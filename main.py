@@ -132,10 +132,9 @@ while True:
 		# Int the x, y floats that were returned from minEnc
 		center = (int(x), int(y))
 
-		# Draw circles. Center, radius and bullseye
-		cv2.circle(frame, (int(x), int(y)), int(radius),(0, 255, 255), 2)
+		# Draw circles. Ball outline and center
+		cv2.circle(frame, center ), int(radius),(0, 255, 255), 2)
 		cv2.circle(frame, center, 5, (0, 0, 255), -1)
-		cv2.circle(frame, center, 10, (0, 0, 255), -1)
 
 		# Update the radii queue only if unique
 		if len(rds) == 0 or radius != rds[0]:
